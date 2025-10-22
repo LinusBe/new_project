@@ -1,19 +1,3 @@
-Hallo, ich habe die von Ihnen bereitgestellten Fehler analysiert. Die Probleme liegen beide in der Datei datafiles/templates/datafiles/analyze.html und hängen damit zusammen, wie die JavaScript- und CSS-Abhängigkeiten der perspective-viewer-Bibliothek von den CDNs geladen werden.
-Hier ist die Analyse der beiden Probleme und der minimale Fix, um sie zu beheben.
-Problem 1: 404 Not Found (CSS-Datei)
-Fehler: GET https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/css/material-light.css (Status Code 404)
-Analyse:
-Dieser Fehler bedeutet, dass die CSS-Datei unter der angegebenen URL auf dem CDN (jsdelivr) nicht (mehr) existiert. Die Bibliothek @finos/perspective-viewer hat ihre Theming-Dateien umstrukturiert. Statt einzelner Dateien (wie material-light.css) gibt es jetzt eine zentrale material.css, die mehrere Themes (einschließlich "Material Light") enthält.
-Problem 2: Uncaught TypeError (JavaScript-Modul)
-Fehler: Uncaught TypeError: Failed to resolve module specifier "regular-table".
-Analyse:
-[cite_start]Dieser Fehler tritt auf, weil Sie die ES-Module (esm) der Perspective-Bibliothek direkt im Browser verwenden[cite: 122]. Eine dieser Dateien (wahrscheinlich perspective-viewer-datagrid.js) versucht, ein anderes Paket namens "regular-table" zu importieren. Der Browser weiß jedoch nicht, wo er dieses Modul finden soll, da es sich nicht um eine URL handelt.
-Dies passiert, weil die esm-Builds auf jsdelivr oft nicht für die direkte Browser-Nutzung (ohne Build-Tool wie Webpack oder eine Import-Map) gebündelt sind.
-Minimaler Fix (Änderungen in analyze.html)
-Die Lösung besteht darin, die Art und Weise, wie die Skripte und Stile geladen werden, zu ändern:
- * Wir korrigieren den CSS-Link, sodass er auf die existierende material.css zeigt.
- * Wir wechseln von den esm (ES Module) JavaScript-Builds zu den umd (Universal Module Definition) Builds. UMD-Dateien sind "all-in-one" gebündelt (inklusive regular-table) und für die direkte Nutzung im Browser ohne import-Anweisungen gedacht.
-Hier sind die notwendigen Änderungen für die Datei datafiles/templates/datafiles/analyze.html:
 {% extends "master.html" %}
 
 {% block title %}
@@ -24,7 +8,65 @@ Hier sind die notwendigen Änderungen für die Datei datafiles/templates/datafil
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/css/material.css" />
 
     <style>
-        [span_0](start_span)/* ... (Ihr bestehendes CSS[span_0](end_span)) ... */
+        /* Maximale Größe für den Analysebereich nutzen */
+        #main-container {
+            max-width: 98%;
+            [span_0](start_span)padding-bottom: 10px;[span_0](end_span)
+        }
+
+        /* Styling für den Perspective Viewer Container */
+        #perspective-container {
+            /* Höhe festlegen, damit Perspective den Platz füllt (wichtig!) */
+            height: 80vh;
+            [span_1](start_span)min-height: 600px;[span_1](end_span)
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid var(--dws-lightgrey);
+            position: relative;
+            [span_2](start_span)/* Für das Loader-Overlay */[span_2](end_span)
+        }
+
+        perspective-viewer {
+            width: 100%;
+            [span_3](start_span)height: 100%;[span_3](end_span)
+        }
+
+        /* Lade-Overlay Styling */
+        #loader {
+            display: flex;
+            [span_4](start_span)align-items: center;[span_4](end_span)
+            justify-content: center;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            [span_5](start_span)z-index: 100;[span_5](end_span)
+            font-size: 1.1em;
+            color: var(--dws-grey);
+            text-align: center;
+            [span_6](start_span)padding: 20px;[span_6](end_span)
+        }
+
+        /* --- Excel Sheet Selector --- */
+        .analysis-controls {
+            display: flex;
+            [span_7](start_span)justify-content: flex-end;[span_7](end_span)
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .sheet-selector {
+            display: flex;
+            [span_8](start_span)align-items: center;[span_8](end_span)
+            gap: 10px;
+        }
+        .sheet-selector label {
+            font-weight: bold;
+            [span_9](start_span)margin-bottom: 0;[span_9](end_span)
+        }
+        .sheet-selector select {
+            width: auto;
+            [span_10](start_span)min-width: 200px;[span_10](end_span)
+            padding: 10px;
+        }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/@finos/perspective/dist/umd/perspective.js"></script>
@@ -36,8 +78,8 @@ Hier sind die notwendigen Änderungen für die Datei datafiles/templates/datafil
 {% block content %}
   <h1>Datenanalyse: {{ data_file.title }}</h1>
   <p>
-    <a href="{% url 'dashboard' %}">&larr; [span_1](start_span)Zurück zum Dashboard</a> |[span_1](end_span)
-    [span_2](start_span)<a href="{% url 'datafiles:download' data_file.id %}">Originaldatei herunterladen</a>[span_2](end_span)
+    <a href="{% url 'dashboard' %}">&larr; [span_11](start_span)Zurück zum Dashboard</a> |[span_11](end_span)
+    <a href="{% url 'datafiles:download' data_file.id %}">Originaldatei herunterladen</a>
   </p>
 
   {% if sheet_names|length > 1 %}
@@ -47,7 +89,7 @@ Hier sind die notwendigen Änderungen für die Datei datafiles/templates/datafil
           <select id="sheet-select">
               {% for sheet in sheet_names %}
               <option value="{{ sheet }}" {% if sheet == selected_sheet %}selected{% endif %}>
-                  [span_3](start_span){{ sheet }}[span_3](end_span)
+                  [span_12](start_span){{ sheet }}[span_12](end_span)
               </option>
               {% endfor %}
           </select>
@@ -61,67 +103,66 @@ Hier sind die notwendigen Änderungen für die Datei datafiles/templates/datafil
   </div>
 
  
-  <script defer>
+  [span_13](start_span)<script defer>[span_13](end_span)
 
-        /* FIX 2 (Fortsetzung): 
-           [span_4](start_span)Die 'import'-Anweisungen[span_4](end_span) werden entfernt, da die Bibliotheken 
-           bereits global im <head> geladen wurden (z.B. als 'window.perspective').
-        */
-
-        [span_5](start_span)// Sheet-Wechsel[span_5](end_span)
+        // Sheet-Wechsel
         document.getElementById('sheet-select')?.addEventListener("change", (event) => {
           window.location.href = "?sheet=" + encodeURIComponent(event.target.value);
-        });
+        [span_14](start_span)});[span_14](end_span)
 
-        [span_6](start_span)async function loadData() {[span_6](end_span)
+        [span_15](start_span)async function loadData() {[span_15](end_span)
             const viewer = document.getElementById("viewer");
             const loader = document.getElementById("loader");
-            [span_7](start_span)try {[span_7](end_span)
+            [span_16](start_span)try {[span_16](end_span)
                 // 1. URL für den Datenabruf konstruieren (?format=arrow).
-                [span_8](start_span)let dataUrl = "{% url 'datafiles:analyze' data_file.id %}?format=arrow";[span_8](end_span)
+                [span_17](start_span)let dataUrl = "{% url 'datafiles:analyze' data_file.id %}?format=arrow";[span_17](end_span)
 
-                const selectedSheet = "{{ selected_sheet|escapejs }}";
-                [span_9](start_span)if (selectedSheet && selectedSheet !== 'None') {[span_9](end_span)
-                    [span_10](start_span)dataUrl += "&sheet=" + encodeURIComponent(selectedSheet);[span_10](end_span)
-                }
+                [span_18](start_span)const selectedSheet = "{{ selected_sheet|escapejs }}";[span_18](end_span)
+                [span_19](start_span)// WICHTIG: Prüfen, ob der Wert gültig UND nicht der String "None" ist (Django Template Verhalten).[span_19](end_span)
+                [span_20](start_span)if (selectedSheet && selectedSheet !== 'None') {[span_20](end_span)
+                    dataUrl += "&sheet=" + encodeURIComponent(selectedSheet);
+                [span_21](start_span)}
 
                 // 2. Daten vom Server abrufen (Streaming)
                 const response = await fetch(dataUrl);
-                [span_11](start_span)if (!response.ok) {[span_11](end_span)
+                if (!response.ok) {[span_21](end_span)
+                    // Fehlerbehandlung, wenn der Server (z.B. views.py) einen Fehler meldet (Status 500/404)
                     const errorText = await response.text();
-                    [span_12](start_span)throw new Error(`Server-Fehler (Status ${response.status}): ${errorText}`);[span_12](end_span)
+                    [span_22](start_span)throw new Error(`Server-Fehler (Status ${response.status}): ${errorText}`);[span_22](end_span)
                 }
 
                 // 3. Antwort als ArrayBuffer lesen (Binärdaten/Arrow Stream)
                 const buffer = await response.arrayBuffer();
-                [span_13](start_span)if (buffer.byteLength === 0) {[span_13](end_span)
+                [span_23](start_span)if (buffer.byteLength === 0) {[span_23](end_span)
                     loader.textContent = "Die Datei oder das ausgewählte Sheet ist leer.";
-                    [span_14](start_span)return;[span_14](end_span)
+                    [span_24](start_span)return;[span_24](end_span)
                 }
 
                 // 4. Daten in Perspective laden (via Worker)
-                // 'perspective' ist jetzt ein globales Objekt, kein Import nötig.
-                [span_15](start_span)const table = await perspective.table(buffer);[span_15](end_span)
+                // Der Worker verarbeitet den Arrow-Buffer effizient in WebAssembly.
+                // 'perspective' ist jetzt global verfügbar (durch die UMD-Skripte im <head>)
+                [span_25](start_span)const table = await perspective.table(buffer);[span_25](end_span)
 
                 // 5. Tabelle an den Viewer binden
-                [span_16](start_span)await viewer.load(table);[span_16](end_span)
-                // 6. Standardkonfiguration
+                await viewer.load(table);
+                [span_26](start_span)// 6. Standardkonfiguration des Viewers (Excel-ähnliche Pivot-Funktionalität ist standardmäßig verfügbar)[span_26](end_span)
                 await viewer.restore({
-                    plugin: "Datagrid",
-                    settings: true,
+                    [span_27](start_span)plugin: "Datagrid", // Standardansicht ist die Tabelle[span_27](end_span)
+                    [span_28](start_span)settings: true,     // Zeigt das Konfigurationsmenü (Sidebar) an[span_28](end_span)
                     theme: "Material Light"
-                [span_17](start_span)});[span_17](end_span)
+                [span_29](start_span)});[span_29](end_span)
 
                 // 7. Lade-Overlay entfernen
-                [span_18](start_span)loader.style.display = "none";[span_18](end_span)
-            [span_19](start_span)} catch (error) {[span_19](end_span)
+                loader.style.display = "none";
+            [span_30](start_span)} catch (error) {[span_30](end_span)
                 console.error("Fehler während der Datenanalyse:", error);
-                [span_20](start_span)loader.innerHTML = `<span style="color: red;">Kritischer Fehler beim Laden oder Verarbeiten der Daten.<br><small>${error.message}</small></span>`;[span_20](end_span)
-            }
+                [span_31](start_span)loader.innerHTML = `<span style="color: red;">Kritischer Fehler beim Laden oder Verarbeiten der Daten.<br><small>${error.message}</small></span>`;[span_31](end_span)
+            [span_32](start_span)}
         }
 
-        [span_21](start_span)// Startet den Ladevorgang.[span_21](end_span)
-        loadData();
+        // Startet den Ladevorgang.
+        // Da dies ein Modul ist (type="module"), wird es automatisch[span_32](end_span)
+        // nach dem Parsen des DOM ausgeführt (deferred).
+        [span_33](start_span)loadData();[span_33](end_span)
   </script>
 {% endblock %}
-
