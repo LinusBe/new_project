@@ -1,3 +1,11 @@
+Das ist ein exzellenter Hinweis, und der Fehler TypeError: perspective.table is not a function ist der entscheidende.
+Mein vorheriger Fix basierte auf einer fehlerhaften Annahme, wie die UMD-Skripte die globalen Variablen erstellen. Sie haben völlig recht, der Code ist so nicht lauffähig.
+Hier ist die Analyse und die korrekte Lösung:
+ * Das Problem: Die UMD-Skripte (insbesondere perspective.js) erstellen ein globales Objekt namens perspective. Dieses Objekt ist jedoch nicht der Worker selbst. Stattdessen ist es eine Art "Fabrik", die eine Methode namens .worker() bereitstellt.
+ * [cite_start]Der Fehler: Ihr Code versucht, perspective.table(buffer) aufzurufen. Die .table()-Methode existiert jedoch nicht auf dem globalen perspective-Objekt. Sie existiert auf der Worker-Instanz, die wir erst abrufen müssen.
+ * Die Lösung: Wir müssen den Worker explizit initialisieren, bevor wir .table() aufrufen.
+Die finale, vollständige analyze.html
+Bitte ersetzen Sie den gesamten Inhalt Ihrer Datei datafiles/templates/datafiles/analyze.html ein letztes Mal mit diesem Code. Der einzige Unterschied zur vorherigen Version ist die Korrektur von zwei Zeilen innerhalb der loadData-Funktion.
 {% extends "master.html" %}
 
 {% block title %}
@@ -121,7 +129,6 @@
                 let dataUrl = "{% url 'datafiles:analyze' data_file.id %}?format=arrow";
 
                 const selectedSheet = "{{ selected_sheet|escapejs }}";
-                // WICHTIG: Prüfen, ob der Wert gültig UND nicht der String "None" ist (Django Template Verhalten).
                 if (selectedSheet && selectedSheet !== 'None') {
                     dataUrl += "&sheet=" + encodeURIComponent(selectedSheet);
                 }
@@ -129,7 +136,6 @@
                 // 2. Daten vom Server abrufen (Streaming)
                 const response = await fetch(dataUrl);
                 if (!response.ok) {
-                    // Fehlerbehandlung, wenn der Server (z.B. views.py) einen Fehler meldet (Status 500/404)
                     const errorText = await response.text();
                     throw new Error(`Server-Fehler (Status ${response.status}): ${errorText}`);
                 }
@@ -142,8 +148,14 @@
                 }
 
                 // 4. Daten in Perspective laden (via Worker)
-                // 'perspective' ist jetzt global verfügbar (durch die UMD-Skripte im <head>)
-                const table = await perspective.table(buffer);
+                
+                // --- HIER IST DIE KORREKTUR ---
+                // 4a. Worker-Instanz vom globalen 'perspective'-Objekt holen
+                const worker = perspective.worker(); 
+                
+                // 4b. .table() auf der Worker-Instanz aufrufen
+                const table = await worker.table(buffer);
+                // --- ENDE DER KORREKTUR ---
 
                 // 5. Tabelle an den Viewer binden
                 await viewer.load(table);
@@ -167,3 +179,4 @@
     });
   </script>
 {% endblock %}
+
