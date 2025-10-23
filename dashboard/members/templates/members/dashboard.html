@@ -1,0 +1,98 @@
+{% extends "master.html" %}
+{% load humanize %} {% block title %}
+  Dashboard
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Tabellen-Styling angepasst an DWS Design */
+    table.file-list {
+        border-collapse: collapse;
+ width: 100%;
+        margin-top: 20px;
+        background: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid var(--dws-lightgrey);
+ }
+    .file-list th, .file-list td {
+        border-bottom: 1px solid #ddd;
+ padding: 15px;
+        text-align: left;
+    }
+    .file-list th {
+        /* Header im DWS Blau */
+        background-color: var(--dws-blue);
+ color: white;
+        font-weight: 700;
+    }
+    .file-list tr:hover {
+        /* Hover Effekt für bessere Usability */
+        background-color: #f1f3f5;
+ }
+    .actions a {
+        margin-right: 15px;
+        white-space: nowrap;
+ }
+    .muted { color: #666; font-size: 0.9em;
+ }
+</style>
+{% endblock %}
+
+{% block content %}
+  <h1>Willkommen, {{ user.first_name|default:user.username }}!</h1>
+
+  <h2>Ihre Dateien</h2>
+
+  {% if files %}
+    <table class="file-list">
+      <thead>
+        <tr>
+          <th>Titel</th>
+          <th>Dateiname</th>
+          <th>Größe</th>
+          <th>Hochgeladen</th>
+          <th>Aktionen</th>
+        </tr>
+
+       </thead>
+      <tbody>
+        {% for f in files %}
+          <tr>
+            <td>{{ f.title }}</td>
+            <td>
+                <span class="muted">{{ f.filename }}</span>
+            </td>
+            <td>
+
+                 {{ f.file.size|filesizeformat }}
+            </td>
+            <td>{{ f.uploaded_at|date:"d.m.Y H:i" }}</td>
+            <td class="actions">
+
+                {% if f.is_analyzable %}
+
+                  <a href="{% url 'datafiles:analyze' f.id %}">📊 Analysieren</a>
+                {% else %}
+                    <span class="muted">(Analyse nicht möglich)</span>
+                {% endif %}
+
+                <a href="{% url 'datafiles:download' f.id %}">⬇️ Download</a>
+
+
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="content-card">
+        <p>Sie haben aktuell keine Dateien in Ihrem Account.</p>
+    </div>
+  {% endif %}
+
+  <p style="margin-top: 40px;
+ font-size: 0.9em;" class="muted">
+    Dateien können aktuell über das Admin-Backend hochgeladen und zugewiesen werden.
+  </p>
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Login
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px;
+ margin: 50px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+  <h2>Login</h2>
+
+  {# Zeigt allgemeine Formularfehler (z.B. falsche Kombination) #}
+  {% if form.non_field_errors %}
+    <div class="messages">
+        <li class="error">Benutzername oder Passwort ist falsch. Bitte versuchen Sie es erneut.</li>
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+        <label for="{{ form.username.id_for_label }}">Benutzername:</label>
+        {{
+ form.username }}
+        {{ form.username.errors }}
+    </div>
+    <div class="form-group">
+        <label for="{{ form.password.id_for_label }}">Passwort:</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+    </div>
+
+    <button type="submit" style="width: 100%;">Login</button>
+
+    <input type="hidden" name="next" value="{{ next }}">
+  </form>
+
+  <p style="margin-top: 20px;
+ text-align: center; color: #666;">
+    Zugang muss durch einen bestehenden Benutzer erstellt werden.
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DWS Datenportal{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Globales CSS Styling - DWS Corporate Design */
+    :root {
+        /* DWS
+ Colors (Authentic DWS Blue) */
+        --dws-blue: #00338D;
+ /* Primärfarbe */
+        --dws-lightblue: #0099CC;
+ /* Sekundärfarbe/Interaktion */
+        --dws-dark: #002266;
+ /* Hover-Effekt Primär */
+        --dws-grey: #666666;
+        --dws-lightgrey: #E0E0E0;
+        --background-color: #F8F9FA;
+        --text-color: #333333;
+ }
+
+    body {
+        font-family: 'Roboto', Arial, sans-serif;
+        margin: 0;
+ background-color: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
+    }
+    .container { padding: 30px; max-width: 1400px; margin: auto;
+ }
+    #main-container {
+        padding-top: 20px;
+ }
+
+    /* Navigation Styling */
+    nav {
+        background: var(--dws-blue);
+ /* DWS Blau für die Navigation */
+        padding: 15px 30px;
+        display: flex;
+ justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        color: white;
+ }
+    nav a {
+        text-decoration: none;
+        color: white;
+ padding: 8px 15px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    nav a:hover, nav .nav-button:hover {
+        background-color: var(--dws-lightblue);
+ }
+    .logo a {
+        font-weight: 700;
+        font-size: 1.5em;
+ padding-left: 0;
+    }
+    .user-info { font-size: 0.9em; display: flex; align-items: center; gap: 15px;
+ }
+    .user-name { font-weight: bold; margin-right: 10px;
+ }
+
+    .nav-button {
+        background: none;
+        border: none;
+        color: white;
+ cursor: pointer;
+        padding: 8px 15px;
+        border-radius: 4px;
+        font-size: 1em;
+        transition: background-color 0.3s;
+ }
+
+    /* Typography */
+    h1, h2 {
+        color: var(--text-color);
+ margin-bottom: 20px;
+    }
+    h1 { font-size: 2.2em; }
+    h2 { font-size: 1.8em;
+ }
+
+    /* Styling für Django Messages (Flash-Nachrichten) */
+    .messages { list-style-type: none; padding: 0;
+ margin-bottom: 20px; }
+    .messages li { padding: 12px 15px; border-radius: 5px; border: 1px solid transparent; margin-bottom: 10px;
+ }
+    .messages .info { background-color: #d9edf7; color: #31708f; border-color: #bce8f1;
+ }
+    .messages .success { background-color: #dff0d8; color: #3c763d; border-color: #d6e9c6;
+ }
+    .messages .error { background-color: #f2dede; color: #a94442; border-color: #ebccd1;
+ }
+
+    /* Content Card (für Formulare und Boxen) */
+    .content-card {
+        background: #ffffff;
+ padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid var(--dws-lightgrey);
+ }
+
+    /* Formular Styling (Global) */
+    .form-group { margin-bottom: 20px;
+ }
+    label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--dws-grey);
+ }
+    input[type=text], input[type=password], input[type=email], select {
+        width: 100%;
+ padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 1em;
+ }
+    input:focus, select:focus {
+        border-color: var(--dws-lightblue);
+        outline: none;
+ box-shadow: 0 0 0 2px rgba(0, 153, 204, 0.2);
+    }
+    .errorlist { color: #a94442; list-style-type: none;
+ padding-left: 0; font-size: 0.85em; margin-top: 5px;}
+    .form-help-text {
+        font-size: 0.8em;
+ color: #666; margin-top: 5px;
+    }
+
+    /* Button Styling */
+    button, .button {
+        padding: 12px 20px;
+ background-color: var(--dws-blue);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+ }
+    button:hover, .button:hover {
+        background-color: var(--dws-dark);
+        text-decoration: none;
+ color: white;
+    }
+
+    .button-secondary {
+        background-color: #6c757d;
+ }
+    .button-secondary:hover {
+        background-color: #5a6268;
+ }
+
+    /* Links */
+    a {
+        color: var(--dws-blue);
+ text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+ }
+
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav>
+    <div class="logo">
+        <a href="{% url 'dashboard' %}">DWS Datenportal</a>
+    </div>
+    <div class="user-info">
+        {% if user.is_authenticated %}
+            <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+
+            <a href="{% url 'register_user' %}">User anlegen</a>
+
+           <a href="{% url 'password_change' %}">Passwort ändern</a>
+
+            {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}">Admin</a>
+            {% endif %}
+
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token
+ %}
+                <button type="submit" class="nav-button">
+                  Logout
+                </button>
+              </form>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+
+ {% endif %}
+    </div>
+</nav>
+
+<div class="container" id="main-container">
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% block content %}
+
+     {% endblock %}
+</div>
+
+</body>
+</html>

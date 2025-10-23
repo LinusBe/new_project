@@ -1,0 +1,39 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Neuen Benutzer anlegen
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px;
+ margin: 40px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+  <h2>Neuen Account erstellen</h2>
+
+  <p><a href="{% url 'dashboard' %}">&larr; Zurück zum Dashboard</a></p>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {# Iteriert durch alle Felder des Formulars #}
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+        {{ field }}
+
+
+         {# Zeigt Hilfetexte an (z.B. Passwortanforderungen) #}
+        {% if field.help_text %}
+          <p style="font-size: 0.8em;
+ color: #666; margin-top: 5px;">{{ field.help_text|safe }}</p>
+        {% endif %}
+
+        {# Zeigt Fehler für dieses spezifische Feld an #}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+
+    <button type="submit" style="margin-top: 10px;">Benutzer anlegen</button>
+  </form>
+
+</div>
+{% endblock %}
