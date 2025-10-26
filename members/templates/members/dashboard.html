@@ -1,0 +1,121 @@
+{% extends "master.html" %}
+{% load humanize %}
+{% load static %}  {# Stelle sicher, dass static hier geladen wird #}
+
+{% block title %}
+  Dashboard
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ----- NEU: Styling für das Header-Bild ----- */
+    .dashboard-header-image {
+        width: 100%;       /* Nimmt die volle Breite des Containers ein */
+        height: auto;      /* Höhe passt sich automatisch an */
+        max-height: 250px; /* Optional: Maximale Höhe begrenzen */
+        object-fit: cover; /* Sorgt dafür, dass das Bild den Bereich füllt, ggf. abschneidet */
+        margin-top: 20px;    /* Abstand nach oben zur Begrüßung */
+        margin-bottom: 30px; /* Abstand nach unten zur Tabelle */
+        display: block;    /* Verhindert unerwünschten Leerraum unter dem Bild */
+    }
+    /* ----- Ende NEU ----- */
+
+    /* Tabellen-Styling angepasst an das neue DWS Design (wie zuvor) */
+    table.file-list {
+        border-collapse: collapse;
+        width: 100%;
+        /* margin-top: 20px; -- Entfernt oder angepasst, da Bild jetzt Abstand gibt */
+        background: var(--dws-background-white);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid var(--dws-border);
+    }
+    .file-list th, .file-list td {
+        padding: 15px 20px;
+        text-align: left;
+        border-bottom: 1px solid var(--dws-border);
+    }
+    .file-list th {
+        /* Header im DWS Petrol */
+        background-color: var(--dws-primary);
+        color: white;
+        font-weight: 700;
+    }
+    .file-list tr:last-child td {
+        /* Entfernt die Linie unter der letzten Zeile */
+        border-bottom: none;
+    }
+    .file-list tr:hover {
+        /* Hover Effekt */
+        background-color: var(--dws-background-hover);
+    }
+    .actions a {
+        margin-right: 15px;
+        white-space: nowrap;
+    }
+    .muted {
+        color: var(--dws-text-light);
+        font-size: 0.9em;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+  <h1>Hi {{ user.first_name|default:user.username }}!</h1>
+
+  {# ----- NEU: Header-Bild eingefügt ----- #}
+  <img src="{% static 'members/img/dashboard_header.png' %}" alt="Dashboard Header" class="dashboard-header-image">
+  {# Ersetze 'dashboard_header.jpg' mit deinem Dateinamen #}
+  {# ----- Ende NEU ----- #}
+
+  <h2>Your Files</h2>
+
+  {% if files %}
+    <table class="file-list">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Filename</th>
+          <th>Size</th>
+ 
+         <th>Uploaded</th>
+          <th>Actions</th>
+        </tr>
+       </thead>
+      <tbody>
+        {% for f in files %}
+          <tr>
+            <td>{{ f.title }}</td>
+            <td>
+           
+                <span class="muted">{{ f.filename }}</span>
+            </td>
+            <td>
+                 {{ f.file.size|filesizeformat }}
+            </td>
+            <td>{{ f.uploaded_at|date:"d.m.Y H:i" }}</td>
+            <td class="actions">
+         
+                {% if f.is_analyzable %}
+                  <a href="{% url 'datafiles:analyze' f.id %}">📊 Analyze</a>
+                {% else %}
+                    <span class="muted">(Analysis not available)</span>
+                {% endif %}
+       
+                <a href="{% url 'datafiles:download' f.id %}">⬇️ Download</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="content-card">
+        <p>You currently have no files in your account.</p>
+    </div>
+  {% endif %}
+
+  <p style="margin-top: 40px;
+font-size: 0.9em;" class="muted">
+    Files can currently be uploaded and assigned via the admin backend.
+  </p>
+
+{% endblock %}

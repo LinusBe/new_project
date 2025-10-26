@@ -1,0 +1,71 @@
+/* django/dashboard/datafiles/static/datafiles/css/dws-theme.css */
+
+/* Definition der DWS Basis-Variablen im Root-Scope für Konsistenz (falls noch nicht vorhanden) */
+:root {
+    --dws-primary: #007d85;
+--dws-background-white: white;
+    --dws-text: #333;
+    --dws-border: #e7ebed;
+    --dws-font-family: Arial, sans-serif;
+    
+    /* NEU: Definieren der hellblauen/grünen DWS-Farbe als Variable */
+    --dws-background-accent: #e0f2f1;
+}
+
+/* * LÖSUNG für Spezifität (Problem 2 & 3): 
+ * Wir verwenden eine hohe Spezifität (html body ...), um sicherzustellen, 
+ * dass die Regeln die Standardeinstellungen des Pro-Themes überschreiben.
+*
+ * NEU: Zielt jetzt auf "Pro Light" statt "Pro Dark"
+ */
+html body perspective-viewer[theme="Pro Light"] {
+    /* === 1. Fonts & Farben === */
+    --interface-font-family: var(--dws-font-family);
+--plugin--font-family: var(--dws-font-family);
+    --interface--color: var(--dws-text);
+    --datagrid-cell--color: var(--dws-text);
+    --button--color: var(--dws-primary);
+    /* Steuert die Farbe der SVG-Masken (wichtig für die Icons) */
+    --icon--color: var(--dws-primary);
+/* === 2. Hintergründe (NEU: Angepasst für DWS-Grau-UI) === */
+    
+    /* Der Rahmen/Hintergrund der gesamten Komponente (bleibt grau) */
+    --perspective-viewer--background: var(--dws-background, #f6f8f8);
+/* UI-Elemente (Sidebar, Config-Panel) erhalten jetzt das DWS-Hintergrund-Grau */
+    --sidebar--background: var(--dws-background, #f6f8f8);
+    --config-area--background: var(--dws-background, #f6f8f8);
+--top-panel--background: var(--dws-background, #f6f8f8);
+    
+    /* Der Datenbereich (Grid, Chart) bleibt weiß für Lesbarkeit */
+    --datagrid--background: var(--dws-background-white);
+/* ... */
+    
+    /* === 3. Datagrid Styling & Layout === */
+    /* Header-Hintergrund passt sich jetzt der Sidebar an (auch Grau) */
+    --datagrid-header--background: var(--dws-background, #f6f8f8);
+--datagrid-header--color: #006666;
+    --datagrid-header--font-weight: 700;
+    --datagrid-grid-line--color: var(--dws-border);
+    --sidebar--width: 450px;
+    
+    /* === 4. Internationalisierung (LÖSUNG PROBLEM 3: Fehlende Labels) === */
+    --intl-group-by: "Group by (Rows)";
+--intl-split-by: "Group by (Columns)";
+    --intl-filter: "Filter";
+    --intl-sort: "Sort";
+    --intl-columns: "Columns";
+    --intl-expressions: "Expressions";
+    --intl-reset: "Reset";
+--intl-export: "Export";
+/* Sicherstellen, dass die Label-Farbe sichtbar ist */
+    --config-label--color: var(--dws-text);
+/* === 5. ICON ANPASSUNG (LÖSUNG PROBLEM 1: Grünes Viereck) === */
+    /* KORREKTUR: Wir nutzen die korrekten Variablen --icon-lock/unlock.
+*/
+    
+    /* Definition eines "Auge" Icons (für Read-Only) als SVG Data-URL (URL-encoded für maximale Robustheit) */
+    --dws-icon-readonly: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E");
+/* Zuweisung des Icons. */
+    --icon-lock: var(--dws-icon-readonly);
+    --icon-unlock: var(--dws-icon-readonly);
+}

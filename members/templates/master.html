@@ -1,0 +1,304 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}DWS Data Portal{% endblock %}</title>
+
+  <style>
+    /* --- 1. FONT LOADING (DwsSans) --- */
+    @font-face {
+        font-family: 'DwsSans';
+        /* Lädt die Schriftart aus dem static-Verzeichnis der members App */
+        src: url("{% static 'members/fonts/DwsSans-Regular.woff2' %}") format('woff2');
+        font-weight: 400; /* Regular */
+        font-style: normal;
+        font-display: swap;
+/* Schnelleres Rendering */
+    }
+    /* HINWEIS: Fügen Sie hier weitere @font-face Regeln für Bold (font-weight: 700) hinzu, falls Sie die Bold-Datei haben.
+*/
+
+    /* --- 2. DWS CORPORATE DESIGN VARIABLEN (NEU) --- */
+    :root {
+        /* Primärfarben (Petrol) */
+        --dws-primary: #007d85;
+/* --petrol45 */
+        --dws-primary-dark: #006366;
+/* --petrol55 */
+        --dws-primary-hover: #00646a;
+/* --primaryDarkerColor */
+
+        /* Grau- / Textfarben (GreyBlue Serie - angepasst von dws.com) */
+        --dws-text: #2a3a40;
+/* Dunkler Ton für Haupttext */
+        --dws-text-light: #67777e;
+/* Mittlerer Ton für Meta-Informationen */
+        --dws-border: #e7ebed;
+/* Helles Grau für Linien/Borders */
+
+        /* Hintergründe */
+        --dws-background: #f6f8f8;
+/* --greyBlue000 */
+        --dws-background-white: #ffffff;
+        --dws-background-hover: #f1f3f5;
+/* Subtiler Hover */
+
+        /* Schriftart */
+        --dws-font-family: 'DwsSans', Arial, sans-serif;
+        /* Legacy Variablen (für Kompatibilität in analyze.html CSS) */
+        --dws-blue: var(--dws-primary);
+        --dws-grey: var(--dws-text-light);
+        --dws-lightgrey: var(--dws-border);
+        --text-color: var(--dws-text);
+    }
+
+    /* --- 3. GLOBALES STYLING --- */
+    body {
+        font-family: var(--dws-font-family);
+        margin: 0;
+        background-color: var(--dws-background);
+        color: var(--dws-text);
+        line-height: 1.6;
+        font-size: 16px;
+    }
+
+    .container {
+        padding: 30px;
+        max-width: 1440px;
+        margin: auto;
+    }
+    #main-container {
+        padding-top: 20px;
+    }
+
+    /* --- 4. NAVIGATION (HEADER) --- */
+    nav {
+        /* Moderner Look: Weißer Hintergrund, klare Linien */
+        background: var(--dws-background-white);
+        padding: 10px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--dws-border);
+        color: var(--dws-text);
+        height: 70px;
+        box-sizing: border-box;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+
+    .logo a {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--dws-text);
+    }
+
+    .logo svg {
+        height: 28px;
+/* Standard DWS Logo Höhe */
+        width: auto;
+        color: #000;
+/* DWS Logo ist Schwarz */
+    }
+
+    .portal-title {
+        margin-left: 15px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        border-left: 1px solid var(--dws-border);
+        padding-left: 15px;
+    }
+
+    .user-info {
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .user-name {
+        font-weight: 700;
+        margin-right: 10px;
+        color: var(--dws-text-light);
+    }
+
+    /* Navigation Links und Buttons im Header */
+    nav a, .nav-button {
+        text-decoration: none;
+        color: var(--dws-text);
+        padding: 8px 12px;
+        transition: color 0.3s;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-family: var(--dws-font-family);
+    }
+
+    nav a:hover, .nav-button:hover {
+        /* Hover-Effekt im DWS-Stil (Petrol Farbe) */
+        color: var(--dws-primary);
+    }
+
+
+    /* --- 5. TYPOGRAPHY --- */
+    h1, h2 {
+        color: var(--dws-text);
+        margin-bottom: 20px;
+        font-weight: 700; /* Annahme: Bold, falls verfügbar, sonst Regular (400) */
+    }
+    h1 { font-size: 2.5rem;
+}
+    h2 { font-size: 1.8rem; }
+
+    /* --- 6. MESSAGES (Flash-Nachrichten) --- */
+    .messages { list-style-type: none;
+padding: 0; margin-bottom: 20px; }
+    .messages li { padding: 12px 15px; border-radius: 0;
+/* Scharfe Kanten */ border: 1px solid; margin-bottom: 10px; }
+    /* Farben angepasst */
+    .messages .info { background-color: #e0f2f1;
+color: #004d40; border-color: #b2dfdb; }
+    .messages .success { background-color: #e8f5e9; color: #1b5e20; border-color: #c8e6c9;
+}
+    .messages .error { background-color: #fbeaea; color: #b00020; border-color: #f8d7da;
+}
+
+    /* --- 7. CONTENT CARD --- */
+    .content-card {
+        background: var(--dws-background-white);
+        padding: 30px;
+        border-radius: 0; /* Scharfe Kanten */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid var(--dws-border);
+    }
+
+    /* --- 8. FORMULARE --- */
+    .form-group { margin-bottom: 25px;
+}
+    label { display: block; margin-bottom: 8px; font-weight: 700; color: var(--dws-text);
+}
+    input[type=text], input[type=password], input[type=email], select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--dws-border);
+        border-radius: 0; /* Scharfe Kanten */
+        box-sizing: border-box;
+        font-size: 1rem;
+        font-family: var(--dws-font-family);
+        background-color: #ffffff;
+    }
+    input:focus, select:focus {
+        border-color: var(--dws-primary);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(0, 125, 133, 0.2);
+/* Helles Petrol Shadow */
+    }
+    .errorlist { color: #b00020; list-style-type: none; padding-left: 0;
+font-size: 0.85em; margin-top: 5px;}
+    .form-help-text { font-size: 0.85em; color: var(--dws-text-light); margin-top: 5px;
+}
+
+    /* --- 9. BUTTONS --- */
+    button, .button {
+        padding: 12px 25px;
+        background-color: var(--dws-primary);
+        color: white;
+        border: none;
+        border-radius: 0; /* Scharfe Kanten */
+        cursor: pointer;
+        font-size: 1rem;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.3s;
+        font-family: var(--dws-font-family);
+        font-weight: 700;
+    }
+    button:hover, .button:hover {
+        background-color: var(--dws-primary-hover);
+        text-decoration: none;
+        color: white;
+    }
+
+    /* --- 10. LINKS --- */
+    a {
+        color: var(--dws-primary);
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+        color: var(--dws-primary-hover);
+    }
+
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<nav>
+    <div class="logo">
+        <a href="{% url 'dashboard' %}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 77.29" fill="currentColor">
+                <g id="Layer_2" data-name="Layer 2">
+                    <g id="Layer_1-2" data-name="Layer 1">
+              
+                        <g id="DWS">
+                            <polygon points="71.39 0 23.62 56.94 23.62 68.03 71.39 11.09 71.39 0"/>
+                            <polygon points="47.77 9.26 0 66.2 0 77.29 47.76 20.34 47.77 9.26"/>
+             
+                            <path d="M199.66,40l-.36-.09c-6.5-1.61-9.46-2.34-9.46-6.23,0-3.57,2.85-5.87,7.27-5.87s6.78,2.25,7.14,6.67v.37h10.39v-.41a13.58,13.58,0,0,0-2.73-8.82c-4-5.05-10.73-5.82-14.4-5.82-13.86,0-18.8,7.73-18.8,15,0,6.21,2.92,10.79,17.46,14.39,5.86,1.39,8.53,2,8.53,5.81S201.39,61,196.27,61c-3.46,0-5.82-1.1-7-3.28a10,10,0,0,1-1-5v-.5h-11v.41c.07,4.44.23,16.24,18.47,16.24,12,0,20.19-6.15,20.27-15.3v-.28c-.09-9.5-9.08-11.64-16.3-13.36"/>
+                            <polygon points="158.38 53.23 150.68 20.72 139.02 20.72 130.99 53.31 124.31 20.72 113.16 20.72 124.41 67.96 135.85 67.96 144.42 34.39 152.21 67.96 164.01 67.96 175.77 20.72 165.4 20.72 158.38 53.23"/>
+                            
+                            <path d="M103.09,25c-3.81-2.84-9.22-4.27-16.09-4.27H71.39V68H86.11a43.24,43.24,0,0,0,8.35-.52,18.79,18.79,0,0,0,11.66-7.09c3.29-4.26,5-9.89,5-16.72,0-4.74-1-13.45-8-18.64m-7.4,31.55c-2.83,2.87-6.54,3-10.41,3H82.73V29.22h2.81a23.53,23.53,0,0,1,6.09.42c7.06,2,8.11,9.62,8.11,14,0,2.64-.39,9.19-4,12.87"/>
+                        </g>
+                    </g>
+                </g>
+            </svg>
+            <span class="portal-title">Data Portal</span>
+        </a>
+    </div>
+  
+    <div class="user-info">
+        {% if user.is_authenticated %}
+            <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+
+            <a href="{% url 'register_user' %}">Create User</a>
+            <a href="{% url 'password_change' %}">Change Password</a>
+
+            {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}">Admin</a>
+      
+            {% endif %}
+
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="nav-button">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="container" id="main-container">
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+ 
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>
