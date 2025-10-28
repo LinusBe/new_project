@@ -1,0 +1,30 @@
+,Model 4
+Start,2025-10-02 00:00:00
+End,2025-10-28 00:00:00
+Period,19 days 00:00:00
+Start Value,100000.0
+End Value,101619.78261745922
+Total Return [%],1.6197826174592194
+Benchmark Return [%],0.6664913083070267
+Max Gross Exposure [%],101.22874571987057
+Total Fees Paid,0.0
+Max Drawdown [%],0.6045658479719772
+Max Drawdown Duration,5 days 00:00:00
+Total Trades,6
+Total Closed Trades,5
+Total Open Trades,1
+Open Trade PnL,410.9399071718799
+Win Rate [%],80.0
+Best Trade [%],0.7622052398956345
+Worst Trade [%],-0.6050269061093859
+Avg Winning Trade [%],0.45447497125259306
+Avg Losing Trade [%],-0.6050269061093859
+Avg Winning Trade Duration,3 days 00:00:00
+Avg Losing Trade Duration,3 days 00:00:00
+Profit Factor,2.9979982676485903
+Expectancy,241.76854205746793
+Sharpe Ratio,5.745311792727354
+Calmar Ratio,59.81490479826953
+Omega Ratio,2.120085287257118
+Sortino Ratio,10.266743243655894
+Avg. Risk/Reward Ratio,inf

@@ -1,0 +1,6 @@
+Trade Id,Direction,Entry Date,Exit Date,Entry Price (EUR),Exit Price (EUR),PnL (%),PnL (EUR),Entry Signal Prob.,Exit Signal Prob.,Status,Exit Reason,Duration (Days)
+0,Long,2025-10-09,2025-10-10,0.8599,0.8645,0.5366,536.5960,0.6357,0.2255,Closed,Signal,1
+1,Short,2025-10-10,2025-10-21,0.8645,0.8588,0.6575,657.5327,0.2255,0.6436,Closed,Signal,11
+2,Long,2025-10-21,2025-10-22,0.8588,0.8621,0.3768,376.8103,0.6436,0.4198,Closed,Signal,1
+3,Short,2025-10-22,2025-10-23,0.8621,0.8615,0.0710,71.0081,0.4198,0.6683,Closed,Signal,1
+4,Long,2025-10-23,2025-10-28,0.8615,0.8581,-0.3881,-388.1043,0.6683,0.5659,Open,Signal,5

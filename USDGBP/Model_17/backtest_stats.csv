@@ -1,0 +1,30 @@
+,Model 17
+Start,2025-10-02 00:00:00
+End,2025-10-28 00:00:00
+Period,19 days 00:00:00
+Start Value,100000.0
+End Value,101055.402507601
+Total Return [%],1.0554025076010003
+Benchmark Return [%],-0.8741841223165903
+Max Gross Exposure [%],100.14531214443119
+Total Fees Paid,0.0
+Max Drawdown [%],0.5070122748152005
+Max Drawdown Duration,8 days 00:00:00
+Total Trades,4
+Total Closed Trades,3
+Total Open Trades,1
+Open Trade PnL,0.0
+Win Rate [%],100.0
+Best Trade [%],0.9107910394831563
+Worst Trade [%],0.05380960685090394
+Avg Winning Trade [%],0.3518008358669953
+Avg Losing Trade [%],
+Avg Winning Trade Duration,6 days 00:00:00
+Avg Losing Trade Duration,
+Profit Factor,inf
+Expectancy,351.8008358669952
+Sharpe Ratio,4.552012666722454
+Calmar Ratio,44.07461461407994
+Omega Ratio,1.8892025327284472
+Sortino Ratio,8.242994135241743
+Avg. Risk/Reward Ratio,inf

@@ -1,0 +1,30 @@
+,Model 6
+Start,2025-10-02 00:00:00
+End,2025-10-28 00:00:00
+Period,19 days 00:00:00
+Start Value,100000.0
+End Value,102166.51877142332
+Total Return [%],2.166518771423318
+Benchmark Return [%],0.6855938179789245
+Max Gross Exposure [%],102.54686949982134
+Total Fees Paid,0.0
+Max Drawdown [%],0.4606809520477547
+Max Drawdown Duration,7 days 00:00:00
+Total Trades,6
+Total Closed Trades,5
+Total Open Trades,1
+Open Trade PnL,0.0
+Win Rate [%],80.0
+Best Trade [%],1.4431881045358896
+Worst Trade [%],-0.38810434589505893
+Avg Winning Trade [%],0.6386557793295942
+Avg Losing Trade [%],-0.38810434589505893
+Avg Winning Trade Duration,3 days 18:00:00
+Avg Losing Trade Duration,3 days 00:00:00
+Profit Factor,6.58231000074689
+Expectancy,433.3037542846636
+Sharpe Ratio,8.116380391155229
+Calmar Ratio,110.58952949822604
+Omega Ratio,2.886707786825169
+Sortino Ratio,17.864626419926577
+Avg. Risk/Reward Ratio,inf

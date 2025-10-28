@@ -1,0 +1,30 @@
+,Model 19
+Start,2025-10-02 00:00:00
+End,2025-10-28 00:00:00
+Period,19 days 00:00:00
+Start Value,100000.0
+End Value,100684.64616704336
+Total Return [%],0.6846461670433637
+Benchmark Return [%],0.6846461670433568
+Max Gross Exposure [%],100.0
+Total Fees Paid,0.0
+Max Drawdown [%],1.1421444744776297
+Max Drawdown Duration,10 days 00:00:00
+Total Trades,1
+Total Closed Trades,0
+Total Open Trades,1
+Open Trade PnL,684.6461670433637
+Win Rate [%],
+Best Trade [%],
+Worst Trade [%],
+Avg Winning Trade [%],
+Avg Losing Trade [%],
+Avg Winning Trade Duration,
+Avg Losing Trade Duration,
+Profit Factor,
+Expectancy,
+Sharpe Ratio,2.349576876563886
+Calmar Ratio,12.2624025170564
+Omega Ratio,1.359967331848731
+Sortino Ratio,3.884396180005165
+Avg. Risk/Reward Ratio,
