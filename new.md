@@ -1,0 +1,469 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Analysis: {{ data_file.title }}
+{% endblock %}
+
+
+{% block extra_head %}
+  {% load static %}
+  
+  <link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/css/themes.css" />
+
+  <link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/css/icons.css" />
+  <link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/css/pro.css" />
+  
+  <link rel="stylesheet" href="{% static 'datafiles/css/dws-theme.css' %}?v=3" />
+
+
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@finos/perspective/dist/cdn/perspective.js" as="script" crossorigin="anonymous" />
+  <link rel="preload" href="https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/cdn/perspective-viewer.js" as="script" crossorigin="anonymous" />
+
+  <style>
+    /* CLEANED CSS: 
+      - Only styles for the page layout (Control Panel, Container).
+      - All theme hacks (variables, ::part) have been removed (Q4).
+    */
+
+    /* Use maximum size for the analysis area */
+    #main-container {
+      max-width: 98%;
+      padding-bottom: 10px;
+    }
+
+    /* Container Setup */
+    #perspective-container {
+      height: 85vh;
+      min-height: 700px;
+      margin-top: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid var(--dws-border, #e7ebed);
+      /* Now uses DWS variable */
+      position: relative;
+      background: var(--dws-background-white, white);
+      /* Now uses DWS variable */
+      display: block;
+      overflow: hidden;
+    }
+
+    /* Ensures the viewer fills the container */
+    perspective-viewer {
+      width: 100%;
+      height: 100%;
+      display: block;
+      position: relative;
+    }
+
+    /* Loading Overlay Styling (Unchanged) */
+    #loader {
+      display: flex;
+      align-items: center; justify-content: center;
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.95);
+      z-index: 100;
+      font-size: 1.1em;
+    }
+
+    /* Control Panel Styling (Unchanged, Q3) */
+    #control-panel {
+      background: var(--dws-background-white, white);
+      /* Now uses DWS variable */
+      padding: 15px; margin-bottom: 10px;
+      border: 1px solid var(--dws-border, #e7ebed);
+      /* Now uses DWS variable */
+      border-radius: 4px; display: flex;
+      gap: 15px; flex-wrap: wrap; align-items: center;
+    }
+
+    /* Button Styling (Unchanged) */
+    .button {
+      display: inline-flex;
+      align-items: center; gap: 6px; padding: 8px 16px;
+      background: var(--dws-primary, #007d85);
+      /* Now uses DWS variable */
+      color: white; border: none;
+      cursor: pointer; border-radius: 4px;
+      font-size: 14px;
+      font-weight: 700; text-decoration: none; transition: background 0.2s, transform 0.1s;
+    }
+    .button:hover { background: var(--dws-primary-hover, #005f66); transform: translateY(-1px);}
+    .button-secondary { background: var(--dws-text-light, #67777e); } /* Adapted */
+    .button-secondary:hover { background: #4d5a60;}
+    .button-outline { background: transparent; color: var(--dws-primary, #007d85); border: 2px solid var(--dws-primary, #007d85);
+    }
+    .button-outline:hover { background: var(--dws-primary, #007d85); color: white; }
+    .button-warning { background: #dc3545;
+    }
+    .button-warning:hover { background: #b02a37; }
+
+    /* Select/Dropdown Styling (Unchanged) */
+    select {
+      padding: 8px 30px 8px 12px;
+      background: var(--dws-background-white, white); /* Now uses DWS variable */
+      border: 1px solid var(--dws-border, #e7ebed);
+      /* Now uses DWS variable */
+      border-radius: 4px; font-size: 14px; cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='O 0 12 12'><path fill='%23333' d='M6 9L1 4h10z'/></svg>");
+      background-repeat: no-repeat; background-position: right 10px center;
+      min-width: 150px;
+    }
+    
+    label { font-weight: 600; color: var(--dws-text, #333); font-size: 14px;
+    }
+    .control-group { display: flex; align-items: center; gap: 8px;
+    }
+    .info-text { color: var(--dws-text-light, #67777e);
+      font-size: 13px; margin-left: auto;
+    }
+
+    /* --- NEU: CSS für das Hilfe-Modal --- */
+    .modal {
+      display: none; /* Standardmäßig versteckt */
+      position: fixed; /* Bleibt an Ort und Stelle */
+      z-index: 1000; /* Sitzt ganz oben (höher als der Loader) */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* Scrollen ermöglichen, falls nötig */
+      background-color: rgba(0,0,0,0.5); /* Schwarzer Hintergrund mit Transparenz */
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: var(--dws-background-white, white);
+      margin: 5% auto; /* 5% von oben und zentriert */
+      padding: 20px 30px;
+      border: 1px solid var(--dws-border, #e7ebed);
+      width: 80%;
+      max-width: 700px;
+      border-radius: 8px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .close-button {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close-button:hover {
+      color: #333;
+    }
+    
+    /* Styling für Hilfe-Inhalte */
+    .modal-content h2 { border-bottom: 1px solid var(--dws-border, #e7ebed); padding-bottom: 10px; margin-bottom: 20px; }
+    .modal-content h3 { margin-top: 25px; color: var(--dws-primary, #007d85); }
+    .modal-content p, .modal-content ol, .modal-content ul { margin-bottom: 10px; line-height: 1.5; }
+    .modal-content ol, .modal-content ul { padding-left: 25px; }
+    .modal-content code { background: #f4f6f7; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+    /* --- Ende NEU: CSS --- */
+
+  </style>
+{% endblock %}
+
+
+{% block content %}
+  <div id="main-container">
+    <h1>Data Analysis: {{ data_file.title }}</h1>
+    
+    <p style="margin-bottom: 20px;">
+      ← <a href="{% url 'dashboard' %}">Back to Dashboard</a> |
+      <a href="{% url 'datafiles:download' data_file.id %}">Download Original File</a> |
+      <a href="javascript:void(0);" onclick="showHelpModal()">❓ Hilfe zur Analyse</a>
+    </p>
+
+    {% if sheets %}
+      <div style="margin: 15px 0; padding: 10px; background: #f4f6f7; border-radius: 4px;">
+        <form method="get" style="display: flex; align-items: center; gap: 10px;">
+          <label for="sheet-select" style="font-weight: 600;">Select Excel Sheet:</label>
+          <select name="sheet" id="sheet-select" onchange="this.form.submit()" style="min-width: 200px;">
+            {% for sheet in sheets %}
+              <option value="{{ sheet }}" {% if sheet == selected_sheet %}selected{% endif %}>
+                {{ sheet }}
+              </option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+    {% endif %}
+
+    <div id="control-panel" style="display: none;">
+      <div class="control-group">
+        <label for="view-select">Global View:</label>
+        <select id="view-select" onchange="loadGlobalView(this.value)">
+          <option value="">-- Select View --</option>
+        </select>
+      </div>
+      <button class="button" onclick="saveCurrentView()">
+        📊 Save as Default
+      </button>
+      <button class="button button-secondary" onclick="saveGlobalView()">
+        💾 Save Global As...
+      </button>
+      <button class="button button-outline" onclick="resetView()">
+        🔄 Reset
+      </button>
+      <button class="button button-warning" onclick="deleteGlobalView()">
+        🗑️ Delete
+      </button>
+
+      <button class="button button-outline" onclick="showHelpModal()" style="margin-left: 15px;">
+        ❓ Hilfe
+      </button>
+      <span class="info-text">Changes are saved automatically in your session</span>
+    </div>
+
+    <div id="perspective-container">
+      <div id="loader">
+        <span>📊 Loading data analysis...</span>
+      </div>
+      <perspective-viewer 
+        id="viewer" 
+        theme="Pro Light" style="width: 100%; height: 100%; display: block;">
+      </perspective-viewer>
+    </div>
+  </div>
+
+  <div id="helpModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" onclick="closeHelpModal()">&times;</span>
+      <h2>Quick Help: Datenanalyse & Filterung</h2>
+      
+      <h3>Wichtig: Filtern nach mehreren Werten (ODER-Logik)</h3>
+      <p>Wenn Sie Zeilen anzeigen möchten, die 'Wert A' <strong>ODER</strong> 'Wert B' in derselben Spalte enthalten (z.B. 'AAPL' oder 'NVDA' in der Spalte 'Ticket'), müssen Sie den <code>in</code> Operator verwenden.</p>
+      <div style="background: #f4f6f7; padding: 10px; margin-bottom: 15px; border-radius: 5px;">
+        <strong>Warum?</strong> Wenn Sie zwei separate Filter hinzufügen (Ticket == 'aapl' UND Ticket == 'nvda'), erhalten Sie keine Ergebnisse, da ein Eintrag nicht beides gleichzeitig sein kann.
+      </div>
+      <ol>
+        <li>Klicken Sie auf den Spaltenkopf (z.B. "Ticket") oder wählen Sie die Spalte in der Seitenleiste.</li>
+        <li>Ändern Sie den Filteroperator auf <strong><code>in</code></strong>.</li>
+        <li>Geben Sie die gewünschten Werte <strong>kommagetrennt</strong> ein: <code>aapl, nvda</code></li>
+      </ol>
+
+      <h3>Filterung nach Textteilen</h3>
+      <ul>
+        <li>Verwenden Sie den Operator <strong><code>contains</code></strong> (enthält), um nach Teilen eines Wortes zu suchen.</li>
+        <li>Verwenden Sie <strong><code>==</code></strong> (ist gleich) für exakte Übereinstimmungen.</li>
+      </ul>
+
+      <h3>Kombinieren verschiedener Filter (UND-Logik)</h3>
+      <p>Filter, die auf verschiedene Spalten angewendet werden, werden automatisch mit UND kombiniert (z.B. Sektor ist 'Tech' UND Land ist 'USA').</p>
+
+      <h3>Pivot-Tabellen erstellen (Gruppieren)</h3>
+      <p>Um Daten zusammenzufassen:</p>
+      <ol>
+        <li>Öffnen Sie die Seitenleiste (falls nicht sichtbar, über den Button oben links).</li>
+        <li>Ziehen Sie Spaltennamen in den Bereich <strong>"Group By"</strong> (für Zeilen-Gruppierung) oder <strong>"Split By"</strong> (für Spalten-Gruppierung).</li>
+      </ol>
+
+    </div>
+  </div>
+  <script type="module">
+    // 1. Imports (as in example, Q1)
+    // We use the /cdn/ versions, which function as modules.
+    import "https://cdn.jsdelivr.net/npm/@finos/perspective-viewer/dist/cdn/perspective-viewer.js";
+    import "https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-datagrid/dist/cdn/perspective-viewer-datagrid.js";
+    import "https://cdn.jsdelivr.net/npm/@finos/perspective-viewer-d3fc/dist/cdn/perspective-viewer-d3fc.js";
+    import perspective from "https://cdn.jsdelivr.net/npm/@finos/perspective/dist/cdn/perspective.js";
+
+    // 2. Setup (Top-level, as it's a module)
+    const viewer = document.getElementById("viewer");
+    const loader = document.getElementById("loader");
+    const controlPanel = document.getElementById("control-panel");
+
+    // Storage Keys (Unchanged, Q3)
+    const STORAGE_KEY = `perspective-config-{{ data_file.id }}`;
+    const GLOBAL_VIEWS_KEY = 'perspective-global-views';
+    // Initialize worker (as in example, Q1)
+    const worker = await perspective.worker();
+
+    // --- NEU: JavaScript für das Hilfe-Modal ---
+    // Funktionen müssen an das window-Objekt gehängt werden, damit sie von den onclick-Attributen im HTML gefunden werden.
+    
+    window.showHelpModal = function() {
+      document.getElementById('helpModal').style.display = "block";
+    }
+
+    window.closeHelpModal = function() {
+      document.getElementById('helpModal').style.display = "none";
+    }
+
+    // Schließt das Modal, wenn der Benutzer außerhalb des Inhalts klickt
+    window.addEventListener('click', function(event) {
+      const modal = document.getElementById('helpModal');
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    });
+    // --- Ende NEU: JavaScript ---
+
+
+    // 3. Functions for Control Panel (Unchanged, Q3)
+    // (createDynamicConfig, save, reset, load, delete, populate)
+
+    /**
+     * Creates a dynamic configuration
+     * (Simplified: "theme: Pro" removed, Q4)
+     */
+    function createDynamicConfig(schema, columns, columnWidths = {}) {
+        
+      const perspectiveColumnConfig = {};
+      for (const [colName, width] of Object.entries(columnWidths)) {
+        if (typeof width === 'number') {
+            perspectiveColumnConfig[colName] = { width: width };
+        } else if (typeof width === 'object' && width.width) {
+            perspectiveColumnConfig[colName] = width;
+        }
+      }
+
+      const config = {
+        plugin: "datagrid",
+        plugin_config: {
+          columns: perspectiveColumnConfig,
+          editable: false
+        },
+        settings: true, // Always show sidebar
+        columns: columns,
+        expressions: [],
+        aggregates: {},
+        sort: [],
+        filter: [],
+        group_by: [],
+        split_by: []
+      };
+      return config;
+    }
+
+    window.saveCurrentView = async function() {
+      const config = await viewer.save();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+      alert("✅ View saved as default!");
+    };
+
+    window.resetView = async function() {
+      localStorage.removeItem(STORAGE_KEY);
+      await viewer.reset();
+      const table = await viewer.getTable();
+      const schema = await table.schema();
+      // NOTE: Adjust these default widths if necessary
+      const defaultWidths = { }; 
+      await viewer.restore(createDynamicConfig(schema, Object.keys(schema), defaultWidths));
+      alert("🔄 View reset!");
+    };
+
+    window.loadGlobalView = async function(viewName) {
+      if (!viewName) return;
+      const views = JSON.parse(localStorage.getItem(GLOBAL_VIEWS_KEY) || '{}');
+      if (views[viewName]) {
+        await viewer.restore(views[viewName]);
+      }
+    };
+
+    window.saveGlobalView = async function() {
+      const name = prompt("Name for the view:");
+      if (!name) return;
+      const config = await viewer.save();
+      const views = JSON.parse(localStorage.getItem(GLOBAL_VIEWS_KEY) || '{}');
+      views[name] = config;
+      localStorage.setItem(GLOBAL_VIEWS_KEY, JSON.stringify(views));
+      populateViewDropdown();
+      alert(`✅ View "${name}" saved!`);
+    };
+
+    window.deleteGlobalView = function() {
+      const viewSelect = document.getElementById('view-select');
+      const viewName = viewSelect.value;
+      if (!viewName || !confirm(`Are you sure you want to delete the view "${viewName}"?`)) return;
+      const views = JSON.parse(localStorage.getItem(GLOBAL_VIEWS_KEY) || '{}');
+      delete views[viewName];
+      localStorage.setItem(GLOBAL_VIEWS_KEY, JSON.stringify(views));
+      populateViewDropdown();
+      alert(`🗑️ View "${viewName}" deleted.`);
+    };
+    function populateViewDropdown() {
+      const viewSelect = document.getElementById('view-select');
+      const views = JSON.parse(localStorage.getItem(GLOBAL_VIEWS_KEY) || '{}');
+      viewSelect.innerHTML = '<option value="">-- Select View --</option>';
+      for (const viewName of Object.keys(views)) {
+        const option = document.createElement('option');
+        option.value = viewName;
+        option.textContent = viewName;
+        viewSelect.appendChild(option);
+      }
+    }
+
+    /**
+     * Main function: Loads and initializes the data analysis
+     * (Simplified: no "waitForPerspective" needed anymore, Q1)
+     */
+    async function loadData() {
+      try {
+        // 1. Get data URL (Unchanged, Q5)
+        let dataUrl = "{% url 'datafiles:analyze' data_file.id %}?format=arrow";
+        const selectedSheet = "{{ selected_sheet|escapejs }}";
+        if (selectedSheet && selectedSheet !== 'None') {
+          dataUrl += "&sheet=" + encodeURIComponent(selectedSheet);
+        }
+
+        // 2. Fetch data (Unchanged)
+        const response = await fetch(dataUrl);
+        if (!response.ok) {
+          throw new Error(`Server error (Status ${response.status})`);
+        }
+        const buffer = await response.arrayBuffer();
+        if (buffer.byteLength === 0) {
+          loader.textContent = "The file is empty.";
+          return;
+        }
+
+        // 3. Load data into Perspective (Simplified, Q1)
+        // 'worker' is already initialized globally.
+        const table = await worker.table(buffer);
+        const schema = await table.schema();
+        const allColumns = Object.keys(schema);
+        
+        await viewer.load(table);
+        // 4. Apply configuration (Unchanged, Q3)
+        const savedConfigRaw = localStorage.getItem(STORAGE_KEY);
+        // NOTE: Adjust these default widths if necessary
+        const defaultWidths = { };
+        if (savedConfigRaw) {
+          try {
+            const savedConfig = JSON.parse(savedConfigRaw);
+            savedConfig.settings = true; // Sidebar anzeigen
+            await viewer.restore(savedConfig);
+          } catch (e) {
+            console.warn("Error loading configuration. Using default.", e);
+            await viewer.restore(createDynamicConfig(schema, allColumns, defaultWidths));
+          }
+        } else {
+          await viewer.restore(createDynamicConfig(schema, allColumns, defaultWidths));
+        }
+
+        // 5. Finalize UI
+        controlPanel.style.display = 'flex';
+        loader.style.display = "none";
+        populateViewDropdown();
+        
+        console.log("✅ Analysis successfully initialized (ESM Refactored)");
+      } catch (error) {
+        console.error("❌ Error during data analysis:", error);
+        loader.innerHTML = `
+          <span style="color: #b00020;">
+            <strong>Error loading data</strong><br>
+            <small>${error.message}</small>
+          </span>`;
+      }
+    }
+
+    // 4. Start loading process
+    loadData();
+  </script>
+{% endblock %}
